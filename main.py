@@ -3,23 +3,29 @@ import LED
 import mydht
 import zabbixsender
 import time
+import machine
 
 led = LED.LED()
 led.pin.on()
 
-wlan = wifimgr.get_connection()
-if wlan is None:
-    print("Could not initialize the network connection.")
-    while True:
-        #pass  # you shall not pass :D
-        led.Blink(1,0.5)
+wlan = wifimgr.get_connection(failover=False)
+for count in range(60):
+    led.Blink(10,0.1)
+    if wlan and wlan_sta.isconnected():
+        led.pin.off()
+    	break
 
+if wlan and wlan_sta.isconnected():
+	pass
+else:
+    #reboot: retry initialize the network connection
+    machine.reset()
 
 # Main Code goes here, wlan is a working network.WLAN(STA_IF) instance.
 print("ESP OK")
-led.Blink(2,0.15)
-time.sleep(0.3)
-led.Blink(2,0.15)
+led.Blink(2,0.2)
+time.sleep(0.2)
+led.Blink(2,0.2)
 
 
 IP_ZBXSERVER = "192.168.16.101"
@@ -57,10 +63,12 @@ while True:
         except Exception as e:
             print(e)
             time.sleep_ms(1000)
+            
         finally:
             led.pin.off()
         
         if (IsDone == True):
             break
 
-    time.sleep(60)
+    #time.sleep(60)
+    machine.deepsleep(60000)

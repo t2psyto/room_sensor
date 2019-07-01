@@ -19,7 +19,7 @@ wlan_sta = network.WLAN(network.STA_IF)
 server_socket = None
 
 
-def get_connection():
+def get_connection(failover=True):
     """return a working WLAN(STA_IF) instance or None"""
 
     # First check if there already is any connection:
@@ -60,7 +60,7 @@ def get_connection():
         print("exception", str(e))
 
     # start web server for connection manager:
-    if not connected:
+    if not connected and failover == True:
         connected = start()
 
     return wlan_sta if connected else None
