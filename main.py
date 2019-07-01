@@ -8,14 +8,23 @@ import machine
 led = LED.LED()
 led.pin.on()
 
+# check if the device woke from a deep sleep
+if machine.reset_cause() == machine.DEEPSLEEP_RESET:
+    print('woke from a deep sleep')
+
+# configure RTC.ALARM0 to be able to wake the device
+rtc = machine.RTC()
+rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
+
+
 wlan = wifimgr.get_connection(failover=False)
 for count in range(60):
     led.Blink(10,0.1)
-    if wlan and wlan_sta.isconnected():
+    if wlan and wlan.isconnected() == True:
         led.pin.off()
     	break
 
-if wlan and wlan_sta.isconnected():
+if wlan and wlan.isconnected() == True:
 	pass
 else:
     #reboot: retry initialize the network connection
@@ -34,6 +43,9 @@ sender = zabbixsender.ZabbixSender(IP_ZBXSERVER, recv_buffer_size = 2048)
 dht11 = mydht.DHT11()
 
 while True:
+    # set RTC.ALARM0 to fire after 60 seconds (waking the device)
+    rtc.alarm(rtc.ALARM0, 60000)
+
     IsDone = False
     for count in range(4):
         try:
@@ -71,4 +83,9 @@ while True:
             break
 
     #time.sleep(60)
-    machine.deepsleep(60000)
+    rtc.alarm(rtc.ALARM0, 60000)
+
+    # put the device to sleep
+    machine.deepsleep()
+    time.sleep(1)
+    

@@ -28,6 +28,8 @@ def get_connection(failover=True):
 
     connected = False
     try:
+    	wlan_sta.disconnect()
+    	wlan_sta.active(False)
         # ESP connecting to WiFi takes time, wait a bit and try again:
         time.sleep(3)
         if wlan_sta.isconnected():
